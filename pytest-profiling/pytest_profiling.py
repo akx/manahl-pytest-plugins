@@ -7,6 +7,14 @@ import pstats
 import pipes
 
 
+def clean_filename(s):
+    forbidden_chars = set('/?<>\:*|"')
+    return "".join(
+        c if c not in forbidden_chars and ord(c) < 127 else '_'
+        for c in s
+    )
+
+
 class Profiling(object):
     """Profiling plugin for pytest."""
     svg = False
@@ -50,7 +58,7 @@ class Profiling(object):
         """Hook into pytest_pyfunc_call; marked as a tryfirst hook so that we
         can call everyone else inside `cProfile.runctx`.
         """
-        prof = os.path.join("prof", pyfuncitem.name + ".prof")
+        prof = os.path.join("prof", clean_filename(pyfuncitem.name) + ".prof")
         cProfile.runctx("fn()", globals(), dict(fn=__multicall__.execute), filename=prof)
         self.profs.append(prof)
 
